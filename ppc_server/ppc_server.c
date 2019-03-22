@@ -1,4 +1,7 @@
-
+/*
+** 为每个连接fork一个子进程进行处理
+** gcc命令： gcc -Wall -o pcc-server pcc.c
+*/
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -7,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #define BUFSIZE 100
 
@@ -34,7 +38,7 @@ int main(int argc, char* argv[])
     if ((iListenFd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("Socket error");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     // 绑定套接字
@@ -45,17 +49,17 @@ int main(int argc, char* argv[])
     if (bind(iListenFd, (struct sockaddr*)&stServAddr, sizeof(stServAddr)) < 0)
     {
         perror("bind error");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     // 监听套接字
     if (listen(iListenFd, 5) < 0)
     {
         perror("listen error");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
-    // 注册信号处理函数
+    // 注册信号处理函数，接受子进程退出信号，避免进程僵尸
     signal(SIGCHLD, sig_child);
 
     printf("listen on *:8888\n");
@@ -66,24 +70,35 @@ int main(int argc, char* argv[])
         if ((iConnectFd = accept(iListenFd, (struct sockaddr*)&stCliAddr, &clilen)) < 0)
         {
             perror("accept error");
-            return 1;
+            exit(EXIT_FAILURE);
         }
 
+        // 子进程
         if ((childPid = fork()) == 0)
         {
             close(iListenFd);
 
+            // 客户端主动关闭，发送FIN后，read返回0，结束循环
             while((n = read(iConnectFd, buf, BUFSIZE)) > 0)
             {
-                printf("recv: %s\n", buf);
+                printf("pid: %d recv: %s\n", getpid(), buf);
+                fflush(stdout);
                 if (write(iConnectFd, buf, n) < 0)
                 {
                     perror("write error");
-                    return 1;
+                    exit(EXIT_FAILURE);
                 }
             }
+
+            printf("child exit, pid: %d\n", getpid());
+            fflush(stdout);
+            exit(EXIT_SUCCESS);
         }
-        close(iConnectFd);
+        // 父进程
+        else
+        {
+            close(iConnectFd);
+        }
     }
 
     return 0;
