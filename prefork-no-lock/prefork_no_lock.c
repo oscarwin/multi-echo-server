@@ -1,4 +1,6 @@
-
+/*
+** 预先派生子进程，无锁保护accept
+*/
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
