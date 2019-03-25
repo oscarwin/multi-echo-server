@@ -1,6 +1,7 @@
 
 /*
 ** 每个连接创建一个线程 
+** gcc命令：gcc -Wall -std=c99 -D_POSIX_C_SOURCE -o tpc_server tpc_server.c -lpthread
 */
 
 #include <unistd.h>
@@ -88,6 +89,9 @@ void* doit(void* arg)
     int n = 0;
     int iConnectFd = (int)arg;
     char buf[BUFSIZE];
+
+    // 分离线程
+    pthread_detach(pthread_self());
 
     while((n = read(iConnectFd, buf, BUFSIZE)) > 0)
     {

@@ -1,5 +1,6 @@
 /*
-** 预先派生子进程，无锁保护accept
+** 预先派生子进程
+** gcc命令：gcc -Wall -o prefork_server prefork_server.c -D_POSIX_C_SOURCE -std=c99
 */
 #include <unistd.h>
 #include <sys/socket.h>
@@ -28,7 +29,7 @@ void sig_int(int signo)
     }
 
     while (wait(NULL) > 0);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 pid_t child_make(int iListenFd)
@@ -67,8 +68,9 @@ void child_main(int iListenFd)
                 perror("write error");
             }
         }
+        close(iConnectFd);
     }
-    close(iConnectFd);
+    close(iListenFd);
 }
 
 int main(int argc, char* argv[])
@@ -91,7 +93,7 @@ int main(int argc, char* argv[])
     if ((iListenFd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("Socket error");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     // 绑定套接字
@@ -102,14 +104,14 @@ int main(int argc, char* argv[])
     if (bind(iListenFd, (struct sockaddr*)&stServAddr, sizeof(stServAddr)) < 0)
     {
         perror("bind error");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     // 监听套接字
     if (listen(iListenFd, 5) < 0)
     {
         perror("listen error");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     // 注册信号处理函数

@@ -1,6 +1,6 @@
 /*
 ** 为每个连接fork一个子进程进行处理
-** gcc命令： gcc -Wall -o pcc-server pcc.c
+** gcc命令： gcc -Wall -o ppc-server ppc_server.c
 */
 #include <unistd.h>
 #include <sys/socket.h>

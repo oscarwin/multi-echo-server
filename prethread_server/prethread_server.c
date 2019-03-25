@@ -1,6 +1,7 @@
 
 /*
-** 每个连接创建一个线程 
+** 预先派生线程
+** gcc命令：gcc -Wall -std=c99 -D_POSIX_C_SOURCE -o prethread_server prethread_server.c -lpthread 
 */
 
 #include <unistd.h>
@@ -70,6 +71,7 @@ int main(int argc, char* argv[])
     signal(SIGINT, sig_int);
 
     printf("listen on *:8888\n");
+    fflush(stdout);
 
     for (int i = 0; i < iPthreadNum; ++i)
     {
@@ -105,6 +107,7 @@ void* doit(void* arg)
         while((n = read(iConnectFd, buf, BUFSIZE)) > 0)
         {
             printf("recv: %s\n", buf);
+            fflush(stdout);
             if (write(iConnectFd, buf, n) < 0)
             {
                 perror("write error");
