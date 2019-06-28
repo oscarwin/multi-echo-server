@@ -1,3 +1,13 @@
+
+## 目录说明：
+iterative_server 单进程迭代服务器
+ppc_server 多进程并发服务器
+prefork_server 预先派生子进程并发服务器
+prefork_lock_server 预先派生子进程并加并发锁服务器
+tpc_server 多线程并发服务器
+prethread_server 预先派生线程并发服务器
+reactor_server reactor模式的并发服务器
+
 本文作为自己学习网络编程的总结笔记。打算分析一下主流服务器模式的优缺点，及适用场景，每种模型实现一个回射服务器。客户端用同一个版本，服务端针对每种模型编写对应的回射服务器。
 
 本文所有代码放在：[https://github.com/oscarwin/multi-echo-server](https://user-gold-cdn.xitu.io/2019/3/22/169a5f43ccce37a7)
